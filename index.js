@@ -40,6 +40,7 @@ var Nothing = {
   '@@type': 'got-lambda/Maybe',
   isNothing: true,
   isJust: false,
+  map: function(f) { return this; },
   toString: function() { return 'Nothing'; }
 };
 
@@ -50,6 +51,7 @@ var Just = function Just(x) {
     isNothing: false,
     isJust: true,
     value: x,
+    map: function(f) { return Just(f(x)); },
     toString: function() { return 'Just(' + x + ')'; }
   };
 };
@@ -136,6 +138,12 @@ def('reverse',
 //.
 //. > map(add(10), [1, 2, 3])
 //. [11, 12, 13]
+//.
+//. > map(add(10), Just(6))
+//. Just(16)
+//.
+//. > map(add(10), Nothing)
+//. Nothing
 var map =
 def('map',
     {},
