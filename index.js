@@ -234,5 +234,24 @@ def('head',
     [$.Array(a), Maybe(a)],
     function(xs) { return xs.length === 0 ? Nothing : Just(xs[0]); });
 
+//# parseInt_ :: PositiveInteger -> String -> Maybe Integer
+//.
+//. > parseInt_(10, '42')
+//. Just(42)
+//.
+//. > parseInt_(16, 'FF')
+//. Just(255)
+//.
+//. > parseInt_(16, 'GG')
+//. Nothing
+var parseInt_ =
+def('parseInt_',
+    {},
+    [$.PositiveInteger, $.String, Maybe($.Integer)],
+    function(base, s) {
+      var n = parseInt(s, base);
+      return isNaN(n) ? Nothing : Just(n);
+    });
+
 //  Suppress ESLint errors.
-Just; Nothing; chain; head; inc; map; reverse; shout; sum;
+Just; Nothing; chain; head; inc; map; parseInt_; reverse; shout; sum;
