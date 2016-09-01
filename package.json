@@ -2,6 +2,9 @@
   "name": "introduction-to-sanctuary",
   "version": "0.0.0",
   "private": true,
+  "dependencies": {
+    "sanctuary-def": "sanctuary-js/sanctuary-def#343383975599b1f1cdf4c2f7cadb00c1a9a836b7"
+  },
   "devDependencies": {
     "doctest": "0.10.x",
     "eslint": "2.9.x",
