@@ -34,6 +34,14 @@ var typeName = function(typeRep) {
 //# Any :: TypeRep a
 var Any = function Any() {};
 
+//# invalidArgumentsLength :: (String, Number, Number) -> Error
+var invalidArgumentsLength = function(name, expectedLength, actualLength) {
+  return new TypeError(
+    '‘' + name + '’ requires ' + expectedLength + ' arguments; ' +
+    'received ' + actualLength + ' arguments'
+  );
+};
+
 //# checkArgumentType :: (String, TypeRep a, b, String) -> Undefined
 var checkArgumentType = function(name, X, x, position) {
   var expectedTypeName = typeName(X);
@@ -52,6 +60,8 @@ var curry1 = function(name, X, f) {
       case 1:
         checkArgumentType(name, X, x, 'first');
         return f(x);
+      default:
+        invalidArgumentsLength(name, 1, arguments.length);
     }
   };
 };
@@ -68,6 +78,8 @@ var curry2 = function(name, X, Y, f) {
         checkArgumentType(name, X, x, 'first');
         checkArgumentType(name, Y, y, 'second');
         return f(x, y);
+      default:
+        throw invalidArgumentsLength(name, 2, arguments.length);
     }
   };
 };
@@ -93,6 +105,8 @@ var curry3 = function(name, X, Y, Z, f) {
         checkArgumentType(name, Y, y, 'second');
         checkArgumentType(name, Z, z, 'third');
         return f(x, y, z);
+      default:
+        invalidArgumentsLength(name, 3, arguments.length);
     }
   };
 };
@@ -104,6 +118,9 @@ var curry3 = function(name, X, Y, Z, f) {
 //.
 //. > add('foo', 'bar')
 //. ! TypeError: ‘add’ requires a value of type Number as its first argument; received foo
+//.
+//. > add(1, 2, 3)
+//. ! TypeError: ‘add’ requires 2 arguments; received 3 arguments
 var add =
 curry2('add',
        Number,
