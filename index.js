@@ -7,6 +7,12 @@ var def = $.create({checkTypes: true, env: $.env});
 //# _ :: Placeholder
 var _ = {'@@functional/placeholder': true};
 
+//# Semigroup :: TypeClass
+var Semigroup = $.TypeClass(
+  'got-lambda/Semigroup',
+  function(x) { return x != null && typeof x.concat === 'function'; }
+);
+
 //  a :: Type
 var a = $.TypeVariable('a');
 
@@ -131,7 +137,7 @@ def('toUpper',
     [$.String, $.String],
     function(s) { return s.toUpperCase(); });
 
-//# concat :: a -> a -> a
+//# concat :: Semigroup a => a -> a -> a
 //.
 //. > concat('foo', 'bar')
 //. 'foobar'
@@ -140,7 +146,7 @@ def('toUpper',
 //. [1, 2, 3, 4, 5, 6]
 var concat =
 def('concat',
-    {},
+    {a: [Semigroup]},
     [a, a, a],
     function(s1, s2) { return s1.concat(s2); });
 
