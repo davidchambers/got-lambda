@@ -131,15 +131,18 @@ def('toUpper',
     [$.String, $.String],
     function(s) { return s.toUpperCase(); });
 
-//# concat :: String -> String -> String
+//# concat :: a -> a -> a
 //.
 //. > concat('foo', 'bar')
 //. 'foobar'
+//.
+//. > concat([1, 2, 3], [4, 5, 6])
+//. [1, 2, 3, 4, 5, 6]
 var concat =
 def('concat',
     {},
-    [$.String, $.String, $.String],
-    function(s1, s2) { return s1 + s2; });
+    [a, a, a],
+    function(s1, s2) { return s1.concat(s2); });
 
 //# shout :: String -> String
 //.
