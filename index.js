@@ -53,58 +53,75 @@ var checkArgumentType = function(name, X, x, position) {
   }
 };
 
-//# curry1 :: (String, TypeRep a, a -> b) -> (a -> b)
-var curry1 = function(name, X, f) {
+//# checkReturnType :: (String, TypeRep a, b) -> Undefined
+var checkReturnType = function(name, X, x) {
+  var expectedTypeName = typeName(X);
+  if (expectedTypeName !== 'Any' && repr(x) !== expectedTypeName) {
+    throw new TypeError(
+      '‘' + name + '’ is expected to return a value of type ' +
+      typeName(X) + '; returned ' + x
+    );
+  }
+};
+
+//# curry1 :: (String, TypeRep a, TypeRep b, a -> b) -> (a -> b)
+var curry1 = function(name, X, R, f) {
   return function(x) {
     switch (arguments.length) {
       case 1:
         checkArgumentType(name, X, x, 'first');
-        return f(x);
+        var r = f(x);
+        checkReturnType(name, R, r);
+        return r;
       default:
         invalidArgumentsLength(name, 1, arguments.length);
     }
   };
 };
 
-//# curry2 :: (String, TypeRep a, TypeRep b, (a, b) -> c) -> (a -> b -> c)
-var curry2 = function(name, X, Y, f) {
+//# curry2 :: (String, TypeRep a, TypeRep b, TypeRep c, (a, b) -> c) -> (a -> b -> c)
+var curry2 = function(name, X, Y, R, f) {
   return function(x, y) {
     switch (true) {
       case arguments.length === 1:
-        return curry1(name, Y, function(y) { return f(x, y); });
+        return curry1(name, Y, R, function(y) { return f(x, y); });
       case arguments.length === 2 && isPlaceholder(x):
-        return curry1(name, X, function(x) { return f(x, y); });
+        return curry1(name, X, R, function(x) { return f(x, y); });
       case arguments.length === 2:
         checkArgumentType(name, X, x, 'first');
         checkArgumentType(name, Y, y, 'second');
-        return f(x, y);
+        var r = f(x, y);
+        checkReturnType(name, R, r);
+        return r;
       default:
         throw invalidArgumentsLength(name, 2, arguments.length);
     }
   };
 };
 
-//# curry3 :: (String, TypeRep a, TypeRep b, TypeRep c, (a, b, c) -> d) -> (a -> b -> c -> d)
-var curry3 = function(name, X, Y, Z, f) {
+//# curry3 :: (String, TypeRep a, TypeRep b, TypeRep c, TypeRep d, (a, b, c) -> d) -> (a -> b -> c -> d)
+var curry3 = function(name, X, Y, Z, R, f) {
   return function(x, y, z) {
     switch (true) {
       case arguments.length === 1:
-        return curry2(name, Y, Z, function(y, z) { return f(x, y, z); });
+        return curry2(name, Y, Z, R, function(y, z) { return f(x, y, z); });
       case arguments.length === 2 && isPlaceholder(x):
-        return curry2(name, X, Z, function(x, z) { return f(x, y, z); });
+        return curry2(name, X, Z, R, function(x, z) { return f(x, y, z); });
       case arguments.length === 2:
-        return curry1(name, Z, function(z) { return f(x, y, z); });
+        return curry1(name, Z, R, function(z) { return f(x, y, z); });
       case arguments.length === 3 && isPlaceholder(x) && isPlaceholder(y):
-        return curry2(name, X, Y, function(x, y) { return f(x, y, z); });
+        return curry2(name, X, Y, R, function(x, y) { return f(x, y, z); });
       case arguments.length === 3 && isPlaceholder(x):
-        return curry1(name, X, function(x) { return f(x, y, z); });
+        return curry1(name, X, R, function(x) { return f(x, y, z); });
       case arguments.length === 3 && isPlaceholder(y):
-        return curry1(name, Y, function(y) { return f(x, y, z); });
+        return curry1(name, Y, R, function(y) { return f(x, y, z); });
       case arguments.length === 3:
         checkArgumentType(name, X, x, 'first');
         checkArgumentType(name, Y, y, 'second');
         checkArgumentType(name, Z, z, 'third');
-        return f(x, y, z);
+        var r = f(x, y, z);
+        checkReturnType(name, R, r);
+        return r;
       default:
         invalidArgumentsLength(name, 3, arguments.length);
     }
@@ -125,6 +142,7 @@ var add =
 curry2('add',
        Number,
        Number,
+       Number,
        function(x, y) { return x + y; });
 
 //# inc :: Number -> Number
@@ -133,6 +151,7 @@ curry2('add',
 //. 3
 var inc =
 curry1('inc',
+       Number,
        Number,
        add(1));
 
@@ -145,6 +164,7 @@ curry3('reduce',
        Function,
        Any,
        Array,
+       Any,
        function(f, initial, xs) {
          var result = initial;
          for (var idx = 0; idx < xs.length; idx += 1) {
@@ -160,6 +180,7 @@ curry3('reduce',
 var sum =
 curry1('sum',
        Array,
+       Number,
        reduce(add, 0));
 
 //# prepend :: a -> Array a -> Array a
@@ -169,6 +190,7 @@ curry1('sum',
 var prepend =
 curry2('prepend',
        Any,
+       Array,
        Array,
        function(x, xs) { return [x].concat(xs); });
 
@@ -181,6 +203,7 @@ curry3('flip',
        Function,
        Any,
        Any,
+       Any,
        function(f, y, x) { return f(x)(y); });
 
 //# reverse :: Array a -> Array a
@@ -189,6 +212,7 @@ curry3('flip',
 //. [3, 2, 1]
 var reverse =
 curry1('reverse',
+       Array,
        Array,
        reduce(flip(prepend), []));
 
@@ -199,6 +223,7 @@ curry1('reverse',
 var map =
 curry2('map',
        Function,
+       Array,
        Array,
        function(f, xs) {
          //  We'd like to use xs.map(f) here but Array#map is not lawful:
@@ -215,6 +240,7 @@ curry3('compose',
        Function,
        Function,
        Any,
+       Any,
        function(f, g, x) { return f(g(x)); });
 
 //# toUpper :: String -> String
@@ -223,6 +249,7 @@ curry3('compose',
 //. 'FOO'
 var toUpper =
 curry1('toUpper',
+       String,
        String,
        function(s) { return s.toUpperCase(); });
 
@@ -234,6 +261,7 @@ var concat =
 curry2('concat',
        String,
        String,
+       String,
        function(s1, s2) { return s1 + s2; });
 
 //# shout :: String -> String
@@ -242,6 +270,7 @@ curry2('concat',
 //. 'HEY!'
 var shout =
 curry1('shout',
+       String,
        String,
        compose(concat(_, '!'), toUpper));
 
@@ -255,6 +284,7 @@ curry1('shout',
 var head =
 curry1('head',
        Array,
+       Any,
        function(xs) {
          if (xs.length === 0) throw new Error('‘head’ applied to []');
          return xs[0];
