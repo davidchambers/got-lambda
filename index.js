@@ -2,8 +2,6 @@
 
 var $ = require('sanctuary-def');
 
-var def = $.create({checkTypes: true, env: $.env});
-
 //# _ :: Placeholder
 var _ = {'@@functional/placeholder': true};
 
@@ -29,6 +27,34 @@ var f = $.UnaryTypeVariable('f');
 var Fn = function(inputType, outputType) {
   return $.Function([inputType, outputType]);
 };
+
+//# Maybe :: Type -> Type
+var Maybe = $.UnaryType(
+  'got-lambda/Maybe',
+  function(x) { return x != null && x['@@type'] === 'got-lambda/Maybe'; },
+  function(maybe) { return maybe.isJust ? [maybe.value] : []; }
+);
+
+//# Nothing :: Maybe a
+var Nothing = {
+  '@@type': 'got-lambda/Maybe',
+  isNothing: true,
+  isJust: false,
+  toString: function() { return 'Nothing'; }
+};
+
+//# Just :: a -> Maybe a
+var Just = function Just(x) {
+  return {
+    '@@type': 'got-lambda/Maybe',
+    isNothing: false,
+    isJust: true,
+    value: x,
+    toString: function() { return 'Just(' + x + ')'; }
+  };
+};
+
+var def = $.create({checkTypes: true, env: $.env.concat([Maybe])});
 
 //# add :: Number -> Number -> Number
 //.
@@ -163,21 +189,18 @@ def('shout',
     [$.String, $.String],
     compose(concat(_, '!'), toUpper));
 
-//# head :: Array a -> a
+//# head :: Array a -> Maybe a
 //.
 //. > head(['foo', 'bar', 'baz'])
-//. 'foo'
+//. Just('foo')
 //.
 //. > head([])
-//. ! Error: ‘head’ applied to []
+//. Nothing
 var head =
 def('head',
     {},
-    [$.Array(a), a],
-    function(xs) {
-      if (xs.length === 0) throw new Error('‘head’ applied to []');
-      return xs[0];
-    });
+    [$.Array(a), Maybe(a)],
+    function(xs) { return xs.length === 0 ? Nothing : Just(xs[0]); });
 
 //  Suppress ESLint errors.
-head; inc; map; reverse; shout; sum;
+Just; Nothing; head; inc; map; reverse; shout; sum;
