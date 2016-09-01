@@ -14,6 +14,15 @@ var isPlaceholder = function(x) {
   return x != null && x['@@functional/placeholder'] === true;
 };
 
+//# repr :: a -> String
+//.
+//. > repr(true)
+//. 'Boolean'
+var repr = function(x) {
+  return Object.prototype.toString.call(x).slice('[object '.length,
+                                                 -']'.length);
+};
+
 //# curry2 :: ((a, b) -> c) -> (a -> b -> c)
 var curry2 = function(f) {
   return function(x, y) {
@@ -54,7 +63,24 @@ var curry3 = function(f) {
 //.
 //. > add(2, 2)
 //. 4
-var add = curry2(function(x, y) { return x + y; });
+//.
+//. > add('foo', 'bar')
+//. ! TypeError: ‘add’ requires a value of type Number as its first argument; received foo
+var add = curry2(function(x, y) {
+  if (repr(x) !== 'Number') {
+    throw new TypeError(
+      '‘add’ requires a value of type Number as its first argument; ' +
+      'received ' + x
+    );
+  }
+  if (repr(y) !== 'Number') {
+    throw new TypeError(
+      '‘add’ requires a value of type Number as its second argument; ' +
+      'received ' + y
+    );
+  }
+  return x + y;
+});
 
 //# inc :: Number -> Number
 //.

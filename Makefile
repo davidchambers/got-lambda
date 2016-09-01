@@ -9,7 +9,7 @@ all:
 
 .PHONY: lint
 lint:
-	$(ESLINT) -- index.js
+	$(ESLINT) --rule 'max-len: [error, {code: 79, ignoreComments: true}]' -- index.js
 
 
 .PHONY: setup
