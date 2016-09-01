@@ -1,0 +1,10 @@
+{
+  "name": "introduction-to-sanctuary",
+  "version": "0.0.0",
+  "private": true,
+  "devDependencies": {
+    "doctest": "0.10.x",
+    "eslint": "2.9.x",
+    "sanctuary-style": "0.1.x"
+  }
+}
