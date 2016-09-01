@@ -22,6 +22,9 @@ var b = $.TypeVariable('b');
 //  c :: Type
 var c = $.TypeVariable('c');
 
+//  f :: Type -> Type
+var f = $.UnaryTypeVariable('f');
+
 //  Fn :: (Type, Type) -> Type
 var Fn = function(inputType, outputType) {
   return $.Function([inputType, outputType]);
@@ -103,18 +106,18 @@ def('reverse',
     [$.Array(a), $.Array(a)],
     reduce(flip(prepend), []));
 
-//# map :: (a -> b) -> Array a -> Array b
+//# map :: Functor f => (a -> b) -> f a -> f b
 //.
 //. > map(add(10), [1, 2, 3])
 //. [11, 12, 13]
 var map =
 def('map',
     {},
-    [Fn(a, b), $.Array(a), $.Array(b)],
-    function(f, xs) {
-      //  We'd like to use xs.map(f) here but Array#map is not lawful:
+    [Fn(a, b), f(a), f(b)],
+    function(f, functor) {
+      //  We'd like to use functor.map(f) here but Array#map is not lawful:
       //  it applies the function to three arguments rather than one.
-      return xs.map(function(x) { return f(x); });
+      return functor.map(function(x) { return f(x); });
     });
 
 //# compose :: (b -> c) -> (a -> b) -> a -> c
