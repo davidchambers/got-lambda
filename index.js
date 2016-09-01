@@ -16,6 +16,11 @@ var b = $.TypeVariable('b');
 //  c :: Type
 var c = $.TypeVariable('c');
 
+//  Fn :: (Type, Type) -> Type
+var Fn = function(inputType, outputType) {
+  return $.Function([inputType, outputType]);
+};
+
 //# add :: Number -> Number -> Number
 //.
 //. > add(2, 2)
@@ -43,7 +48,7 @@ def('inc',
 var reduce =
 def('reduce',
     {},
-    [$.Function([a, $.Function([b, a])]), a, $.Array(b), a],
+    [Fn(a, Fn(b, a)), a, $.Array(b), a],
     function(f, initial, xs) {
       var result = initial;
       for (var idx = 0; idx < xs.length; idx += 1) {
@@ -79,7 +84,7 @@ def('prepend',
 var flip =
 def('flip',
     {},
-    [$.Function([a, $.Function([b, c])]), b, a, c],
+    [Fn(a, Fn(b, c)), b, a, c],
     function(f, y, x) { return f(x)(y); });
 
 //# reverse :: Array a -> Array a
@@ -99,7 +104,7 @@ def('reverse',
 var map =
 def('map',
     {},
-    [$.Function([a, b]), $.Array(a), $.Array(b)],
+    [Fn(a, b), $.Array(a), $.Array(b)],
     function(f, xs) {
       //  We'd like to use xs.map(f) here but Array#map is not lawful:
       //  it applies the function to three arguments rather than one.
@@ -113,7 +118,7 @@ def('map',
 var compose =
 def('compose',
     {},
-    [$.Function([b, c]), $.Function([a, b]), a, c],
+    [Fn(b, c), Fn(a, b), a, c],
     function(f, g, x) { return f(g(x)); });
 
 //# toUpper :: String -> String
