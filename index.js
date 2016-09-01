@@ -1,11 +1,29 @@
 'use strict';
 
+//# _ :: Placeholder
+var _ = {'@@functional/placeholder': true};
+
+//# isPlaceholder :: a -> Boolean
+//.
+//. > isPlaceholder(_)
+//. true
+//.
+//. > isPlaceholder(null)
+//. false
+var isPlaceholder = function(x) {
+  return x != null && x['@@functional/placeholder'] === true;
+};
+
 //# curry2 :: ((a, b) -> c) -> (a -> b -> c)
 var curry2 = function(f) {
   return function(x, y) {
-    switch (arguments.length) {
-      case 1: return function(y) { return f(x, y); };
-      case 2: return f(x, y);
+    switch (true) {
+      case arguments.length === 1:
+        return function(y) { return f(x, y); };
+      case arguments.length === 2 && isPlaceholder(x):
+        return function(x) { return f(x, y); };
+      case arguments.length === 2:
+        return f(x, y);
     }
   };
 };
@@ -13,10 +31,21 @@ var curry2 = function(f) {
 //# curry3 :: ((a, b, c) -> d) -> (a -> b -> c -> d)
 var curry3 = function(f) {
   return function(x, y, z) {
-    switch (arguments.length) {
-      case 1: return curry2(function(y, z) { return f(x, y, z); });
-      case 2: return function(z) { return f(x, y, z); };
-      case 3: return f(x, y, z);
+    switch (true) {
+      case arguments.length === 1:
+        return curry2(function(y, z) { return f(x, y, z); });
+      case arguments.length === 2 && isPlaceholder(x):
+        return curry2(function(x, z) { return f(x, y, z); });
+      case arguments.length === 2:
+        return function(z) { return f(x, y, z); };
+      case arguments.length === 3 && isPlaceholder(x) && isPlaceholder(y):
+        return curry2(function(x, y) { return f(x, y, z); });
+      case arguments.length === 3 && isPlaceholder(x):
+        return function(x) { return f(x, y, z); };
+      case arguments.length === 3 && isPlaceholder(y):
+        return function(y) { return f(x, y, z); };
+      case arguments.length === 3:
+        return f(x, y, z);
     }
   };
 };
@@ -101,7 +130,7 @@ var concat = curry2(function(s1, s2) { return s1 + s2; });
 //.
 //. > shout('hey')
 //. 'HEY!'
-var shout = compose(function(s) { return concat(s, '!'); }, toUpper);
+var shout = compose(concat(_, '!'), toUpper);
 
 //# head :: Array a -> a
 //.
