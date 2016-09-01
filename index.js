@@ -5,6 +5,12 @@ var $ = require('sanctuary-def');
 //# _ :: Placeholder
 var _ = {'@@functional/placeholder': true};
 
+//# Chain :: TypeClass
+var Chain = $.TypeClass(
+  'got-lambda/Semigroup',
+  function(x) { return x != null && typeof x.chain === 'function'; }
+);
+
 //# Semigroup :: TypeClass
 var Semigroup = $.TypeClass(
   'got-lambda/Semigroup',
@@ -41,6 +47,7 @@ var Nothing = {
   isNothing: true,
   isJust: false,
   map: function(f) { return this; },
+  chain: function(f) { return this; },
   toString: function() { return 'Nothing'; }
 };
 
@@ -52,6 +59,7 @@ var Just = function Just(x) {
     isJust: true,
     value: x,
     map: function(f) { return Just(f(x)); },
+    chain: function(f) { return f(x); },
     toString: function() { return 'Just(' + x + ')'; }
   };
 };
@@ -154,6 +162,22 @@ def('map',
       return functor.map(function(x) { return f(x); });
     });
 
+//# chain :: Chain f => (a -> f b) -> f a -> f b
+//.
+//. > chain(head, Just(['foo', 'bar', 'baz']))
+//. Just('foo')
+//.
+//. > chain(head, Just([]))
+//. Nothing
+//.
+//. > chain(head, Nothing)
+//. Nothing
+var chain =
+def('chain',
+    {f: [Chain]},
+    [Fn(a, f(b)), f(a), f(b)],
+    function(f, chain) { return chain.chain(f); });
+
 //# compose :: (b -> c) -> (a -> b) -> a -> c
 //.
 //. > compose(Math.sqrt, sum, [1, 2, 3, 4, 5, 6, 7, 8])
@@ -211,4 +235,4 @@ def('head',
     function(xs) { return xs.length === 0 ? Nothing : Just(xs[0]); });
 
 //  Suppress ESLint errors.
-Just; Nothing; head; inc; map; reverse; shout; sum;
+Just; Nothing; chain; head; inc; map; reverse; shout; sum;
