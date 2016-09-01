@@ -7,6 +7,15 @@ var def = $.create({checkTypes: true, env: $.env});
 //# _ :: Placeholder
 var _ = {'@@functional/placeholder': true};
 
+//  a :: Type
+var a = $.TypeVariable('a');
+
+//  b :: Type
+var b = $.TypeVariable('b');
+
+//  c :: Type
+var c = $.TypeVariable('c');
+
 //# add :: Number -> Number -> Number
 //.
 //. > add(2, 2)
@@ -34,7 +43,7 @@ def('inc',
 var reduce =
 def('reduce',
     {},
-    [$.AnyFunction, $.Any, $.Array($.Any), $.Any],
+    [$.AnyFunction, a, $.Array(b), a],
     function(f, initial, xs) {
       var result = initial;
       for (var idx = 0; idx < xs.length; idx += 1) {
@@ -60,7 +69,7 @@ def('sum',
 var prepend =
 def('prepend',
     {},
-    [$.Any, $.Array($.Any), $.Array($.Any)],
+    [a, $.Array(a), $.Array(a)],
     function(x, xs) { return [x].concat(xs); });
 
 //# flip :: (a -> b -> c) -> b -> a -> c
@@ -70,7 +79,7 @@ def('prepend',
 var flip =
 def('flip',
     {},
-    [$.AnyFunction, $.Any, $.Any, $.Any],
+    [$.AnyFunction, b, a, c],
     function(f, y, x) { return f(x)(y); });
 
 //# reverse :: Array a -> Array a
@@ -80,7 +89,7 @@ def('flip',
 var reverse =
 def('reverse',
     {},
-    [$.Array($.Any), $.Array($.Any)],
+    [$.Array(a), $.Array(a)],
     reduce(flip(prepend), []));
 
 //# map :: (a -> b) -> Array a -> Array b
@@ -90,7 +99,7 @@ def('reverse',
 var map =
 def('map',
     {},
-    [$.AnyFunction, $.Array($.Any), $.Array($.Any)],
+    [$.AnyFunction, $.Array(a), $.Array(b)],
     function(f, xs) {
       //  We'd like to use xs.map(f) here but Array#map is not lawful:
       //  it applies the function to three arguments rather than one.
@@ -104,7 +113,7 @@ def('map',
 var compose =
 def('compose',
     {},
-    [$.AnyFunction, $.AnyFunction, $.Any, $.Any],
+    [$.AnyFunction, $.AnyFunction, a, c],
     function(f, g, x) { return f(g(x)); });
 
 //# toUpper :: String -> String
@@ -147,7 +156,7 @@ def('shout',
 var head =
 def('head',
     {},
-    [$.Array($.Any), $.Any],
+    [$.Array(a), a],
     function(xs) {
       if (xs.length === 0) throw new Error('‘head’ applied to []');
       return xs[0];
